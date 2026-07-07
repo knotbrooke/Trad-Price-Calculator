@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Calculator</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-6 bg-gray-50">
+
+<main class="w-full max-w-md space-y-6">
+
+    <h1 class="text-3xl font-bold text-center">
+        Price Calculator
+    </h1>
+
+    <!-- Canvas Size -->
+    <div class="space-y-2">
+
+        <label class="font-medium">
+            Canvas Size
+        </label>
+
+        <select
+            id="size-select"
+            class="w-full border rounded-lg px-4 py-3">
+
+            <option value="8x10">8 × 10 — $80</option>
+            <option value="12x15">12 × 15 — $120</option>
+            <option value="16x20">16 × 20 — $160</option>
+            <option value="24x30">24 × 30 — $300</option>
+            <option value="custom">Custom Size</option>
+
+        </select>
+
+    </div>
+
+    <!-- Custom Size -->
+
+    <div
+        id="custom-size"
+        class="hidden grid grid-cols-2 gap-3">
+
+        <input
+            id="custom-width"
+            type="number"
+            placeholder="Width (in)"
+            class="border rounded-lg px-4 py-3">
+
+        <input
+            id="custom-height"
+            type="number"
+            placeholder="Height (in)"
+            class="border rounded-lg px-4 py-3">
+
+    </div>
+
+    <!-- Subjects -->
+
+    <div class="flex items-center justify-between bg-white rounded-lg p-4 shadow">
+
+        <div>
+            <p class="font-medium">Additional Subjects</p>
+            <p class="text-sm text-gray-500">
+                +30% each
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+
+            <button onclick="changeCount('subjects',-1)"
+                class="w-9 h-9 rounded-full bg-gray-200 text-xl">
+                −
+            </button>
+
+            <span id="subjects-count" class="w-6 text-center font-bold">
+                0
+            </span>
+
+            <button onclick="changeCount('subjects',1)"
+                class="w-9 h-9 rounded-full bg-gray-200 text-xl">
+                +
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Landscape -->
+
+    <div class="flex items-center justify-between bg-white rounded-lg p-4 shadow">
+
+        <div>
+            <p class="font-medium">
+                Detailed Landscape
+            </p>
+
+            <p class="text-sm text-gray-500">
+                +60% each
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+
+            <button onclick="changeCount('landscape',-1)"
+                class="w-9 h-9 rounded-full bg-gray-200 text-xl">
+                −
+            </button>
+
+            <span id="landscape-count" class="w-6 text-center font-bold">
+                0
+            </span>
+
+            <button onclick="changeCount('landscape',1)"
+                class="w-9 h-9 rounded-full bg-gray-200 text-xl">
+                +
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Color -->
+
+    <div class="flex justify-between items-center bg-white rounded-lg p-4 shadow">
+
+        <div>
+
+            <p class="font-medium">
+                Colored Artwork
+            </p>
+
+            <p class="text-sm text-gray-500">
+                +20%
+            </p>
+
+        </div>
+
+        <input
+            id="colored-check"
+            type="checkbox"
+            class="w-6 h-6 accent-emerald-600">
+
+    </div>
+
+    <!-- Total -->
+
+    <div class="bg-emerald-600 rounded-xl p-6 text-white text-center">
+
+        <p class="uppercase text-sm opacity-80">
+            Estimated Total
+        </p>
+
+        <p
+            id="total-display"
+            class="text-4xl font-bold mt-2">
+
+            $80.00
+
+        </p>
+
+    </div>
+
+</main>
+
+<script>
+
+const state = {
+    subjects: 0,
+    landscape: 0
+};
+
+function changeCount(type, delta){
+
+    state[type] = Math.max(0, state[type] + delta);
+
+    document.getElementById(type + "-count").textContent = state[type];
+
+    recalc();
+
+}
+
+function getBasePrice(){
+
+    const size = document.getElementById("size-select").value;
+
+    const prices = {
+        "8x10":80,
+        "12x15":120,
+        "16x20":160,
+        "24x30":300
+    };
+
+    if(size !== "custom"){
+        return prices[size];
+    }
+
+    const width =
+        parseFloat(document.getElementById("custom-width").value) || 0;
+
+    const height =
+        parseFloat(document.getElementById("custom-height").value) || 0;
+
+    const area = width * height;
+
+    return Math.ceil(area * 0.60);
+
+}
+
+function recalc(){
+
+    const base = getBasePrice();
+
+    const colored =
+        document.getElementById("colored-check").checked;
+
+    const total =
+        base
+        + (state.subjects * base * .30)
+        + (state.landscape * base * .60)
+        + (colored ? base * .20 : 0);
+
+    document.getElementById("total-display").textContent =
+        "$" + total.toFixed(2);
+
+}
+
+const sizeSelect =
+    document.getElementById("size-select");
+
+const customSize =
+    document.getElementById("custom-size");
+
+sizeSelect.addEventListener("change",function(){
+
+    customSize.classList.toggle(
+        "hidden",
+        sizeSelect.value !== "custom"
+    );
+
+    recalc();
+
+});
+
+document.getElementById("custom-width")
+.addEventListener("input",recalc);
+
+document.getElementById("custom-height")
+.addEventListener("input",recalc);
+
+document.getElementById("colored-check")
+.addEventListener("change",recalc);
+
+recalc();
+
+</script>
+
+</body>
+</html>
